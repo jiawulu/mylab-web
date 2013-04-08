@@ -1,0 +1,12 @@
+{
+    "name":"hello world",
+    "version":"1.0",
+    "description":"my first demo",
+    "browser_action":{
+        "default_icon":"icon.png",
+        "default_popup":"popup.html"
+    },
+    "permissions":[
+        "http://m.taobao.com"
+    ]
+}

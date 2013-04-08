@@ -1,0 +1,3 @@
+[submodule "Modernizr"]
+	path = framework/github/Modernizr
+	url = https://github.com/Modernizr/Modernizr.git

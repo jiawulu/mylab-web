@@ -1,0 +1,39 @@
+#if($h5back_flag)
+<script type="text/javascript">
+    var backData = window.backData = {
+    ##定义css选择符
+        index: "$galaxyServer.render()",
+        backBtn: "h5back_btn",
+        backNick: "h5back_nick"
+    };
+    #set($ua=$rundata.request.getHeader("User-Agent").toUpperCase())
+    console.log("$ua");
+    #if($ua.indexOf("UC") > 0 || ($ua.indexOf("SAFARI")>0 && $ua.indexOf("CHROME")<0))
+        #set($backData.nofresh = true)
+    #end
+    #set($serverName=$!rundata.getRequest().getServerName())
+    ##$serverName.startWith("a.")
+    var detailRegex = "^http://a\\.(?:m|wapa|waptest)\\.(?:taobao|tmall)\\.com";
+    var shopRegex = "/shop/|^http://(?:(?!yyz\\.|a\\.|s\\.|shop\\.).)+\\.m\\.tmall\\.com";
+    var channelRegex = "^http://yyz\\.m\\.(?:taobao|tmall)\\.com|channel";
+    var searchRegex = "^http://s\\.(?:m|wapa|waptest)\\.(?:taobao|tmall)\\.com";
+    var indexRegex = "^http://m\\.(?:taobao|tmall)\\.com";
+    #if("detail"==$h5back_flag)
+    backData.exceptRegs = [detailRegex,'^http://b.','^http://zc.','/snsshare/','welcome.htm','http://login'];
+    backData.backNames=['搜索','店铺','频道','首页','有爱','返回'];
+    backData.regs=[searchRegex, shopRegex, channelRegex,indexRegex,'^http://wo.','http'];
+    #elseif("search"==$h5back_flag)
+    backData.exceptRegs = [detailRegex,searchRegex,'welcome.htm','http://login'];
+    backData.backNames=['频道','首页','返回'];
+    backData.regs=[channelRegex,indexRegex,'http'];
+    #elseif("shop"==$h5back_flag)
+    backData.exceptRegs = ['welcome.htm','http://login',shopRegex];
+    backData.whiteRegs = ['/shop/shop_search.htm']
+    backData.backNames=['商品','频道','首页','搜索','返回'];
+    backData.regs=[detailRegex,channelRegex, indexRegex,'/shop/shop_search','http'];
+    #end
+yuicompressor h5back.js
+</script>
+#end
+
+

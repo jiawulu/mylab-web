@@ -1,0 +1,32 @@
+#if($h5back_flag)
+<script type="text/javascript">
+var backData = window.backData = {
+##定义css选择符
+index: "$galaxyServer.render()",
+backBtn: "h5back_btn",
+backNick: "h5back_nick"
+};
+#set($ua=$rundata.request.getHeader("User-Agent").toUpperCase())
+console.log("$ua");
+#if($ua.indexOf("UC") > 0 || ($ua.indexOf("SAFARI")>0 && $ua.indexOf("CHROME")<0))
+#set($backData.nofresh = true)
+#end
+#set($serverName=$!rundata.getRequest().getServerName())
+##$serverName.startWith("a.")
+#if("detail"==$h5back_flag)
+backData.exceptRegs = ['^http://a\.','^http://b\.','/snsshare/','welcome.htm','http://login'];
+backData.backNames=['店铺', '搜索', '频道','首页','有爱','返回'];
+backData.regs=['(/shop/|^http://.*.m.tmall.com)', 'http://s.(m|waptest|wapa).taobao.com','(yyz.m.taobao.com|channel)','http://(m|waptest|wapa).taobao.com/','^http://wo\.','http'];
+#elseif("search"==$h5back_flag)
+backData.exceptRegs = ['^http://a\.','^http://s\.','welcome.htm','http://login'];
+backData.backNames=['频道','首页','返回'];
+backData.regs=['(yyz.m.taobao.com|channel)','http://(m|waptest|wapa).taobao.com/','http'];
+#elseif("shop"==$h5back_flag)
+backData.exceptRegs = ['welcome.htm','http://login','(shop|^http://.*.m.tmall.com)'];
+backData.whiteRegs = ['/shop/shop_search.htm']
+backData.backNames=['频道','首页','商品','搜索','返回'];
+backData.regs=['(yyz.m.taobao.com|channel)','http://(m|waptest|wapa).taobao.com/','^http://a\.','/shop/shop_search','http'];
+#end
+document.addEventListener("DOMContentLoaded",function(){function g(p,n){if(p){if(!p.match("^http[s]?://[^/]*\\.(taobao|tmall|etao|alibaba|alipay|aliyun)\\.com/")){return null}if(j.whiteRegs){for(var o=0;o<j.whiteRegs.length;o++){if(p.match(j.whiteRegs[o])){return p}}}for(var o=0;o<n.length;o++){if(p.match(n[o])){return null}}}return p}function h(o,p){for(var n=0;n<o.length;n++){if(m.match(o[n])){a.innerHTML=p[n];var q={refer:m,hisLen:history.length,name:p[n]};localStorage.setItem(k,JSON.stringify(q));b.onclick=function(){q.skip=true;localStorage.setItem(k,JSON.stringify(q));history.back();return false};return true}}return false}function d(){var p=window.localStorage.getItem(k);if(p){p=JSON.parse(p);console.log(p);var n=history.length;var o=p.hisLen-n-1;if(f){b.onclick=function(){history.go(o);return false};a.innerHTML=p.name}else{if(!p.skip){b.onclick=function(){p.skip=true;localStorage.setItem(k,JSON.stringify(p));window.location.href=p.refer};a.innerHTML=p.name}else{e()}}}else{e()}}function e(){a.innerHTML="首页";b.onclick=function(){window.location.href=i;return false}}var j=window.backData;var k=j.key;var b=document.getElementById(j.backBtn);var a=document.getElementById(j.backNick);var f=j.nofresh;var l=j.backNames;var c=j.regs;var m=g(document.referrer,j.exceptRegs);var i=window.backData.index;console.log("refer is :"+m);if(m){h(c,l)}else{d()}},false);
+</script>
+#end
