@@ -6,3 +6,8 @@ body{
 a{
     margin-top : 20px;
 }
+
+#hisStack ul{
+    list-style-type: decimal;
+    font-size: 15px;
+}
