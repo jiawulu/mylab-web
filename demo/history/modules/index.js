@@ -17,12 +17,12 @@ define(function (require, exports, module) {
 
 
     function addHash(){
-        var hash = location.hash.split("-")[0];
+        var hash = location.hash.split("-")[0] || "#index";
         history.add(hash);
         updateStackInfo();
     }
 
-    addHash();
+//    addHash();
 
     window.onhashchange = function(e){
         addHash();
@@ -34,17 +34,10 @@ define(function (require, exports, module) {
 
 
     function updateStackInfo(){
-
         var stacks = history.getHisStack();
-
         var result = mustache.render(tmp,stacks);
-
-        console.log(result);
-
+        //console.log(result);
         $("#hisStack").html(result);
-
-
-
     }
 
 

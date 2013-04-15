@@ -1,16 +1,22 @@
 define(function (require, exports, module) {
 
-    var defaultData = {
-        refer: document.referrer,
-        hisStack: [],
-        times: -1
-    }
-    var data = restore() || defaultData;
+    var $ = require('zepto'),
+        defaultHisTrace = {
+            entrance:document.referrer,
+            stack:[],
+            index:-1,
+            fromBack:function(){
+                return this.exit && document.referrer &&
+                    this.exit.indexOf(document.referrer) === 0;
+            }
+        };
+        hisTrace = restore() || defaultHisTrace;
+
 
     exports.add = function (hash) {
         var tmpStack = [];
         var i = 0;
-        var hisStack = data.hisStack;
+        var hisStack = hisTrace.stack;
         while (i < hisStack.length) {
             if (hisStack[i].hash == hash) {
                 break;
@@ -19,23 +25,23 @@ define(function (require, exports, module) {
             }
             i++;
         }
-        data.hisStack = tmpStack;
+        hisTrace.stack = tmpStack;
         addHash(hash);
     }
 
-    function addHash(hash, origin) {
-        var hisStack = data.hisStack, times = data.times;
-        hisStack.push({hash: hash, hisLen: ++times, orignHash: origin ? origin : location.hash,
-            isFromBack: function () {
-                return  times - this.hisLen === 1;
-            }, toString: function () {
+    function addHash(hash) {
+        var hisStack = hisTrace.stack, index = hisTrace.index;
+        hisStack.push({hash:hash, hisLen:++index, orignHash:location.hash,
+            isFromBack:function () {
+                return  index - this.hisLen === 1;
+            }, toString:function () {
                 return (this.refer ? this.refer : "") + "|" + (this.hash ? this.hash : "")
                     + "|" + (this.orignHash ? this.orignHash : "") + "|" + (this.hisLen ? this.hisLen : "");
             }});
     }
 
     exports.back = function () {
-        var hisStack = data.hisStack;
+        var hisStack = hisTrace.stack;
 //        if (hisStack.length > 0 && "index" == hisStack[hisStack.length - 1].hash) {
 //            return true;
 //        }
@@ -46,53 +52,45 @@ define(function (require, exports, module) {
 
         if (prevHash) {
             if (prevHash.isFromBack()) {
-                data.times = data.times - 2;
+                hisTrace.times = hisTrace.times - 2;
                 history.back();
             } else {
                 window.location.href = ((prevHash && prevHash.orignHash) ? prevHash.orignHash : "#index");
             }
         } else {
-            window.location.href = (function () {
-                if (data.refer) {
-                    return data.refer;
-                }
-                if (window.defaultBackPage) {
-                    return window.defaultBackPage;
-                }
-                return "http://m.taobao.com";
-            })();
+            window.location.href = hisTrace.entrance || window.defaultBackPage
+                || "http://m.taobao.com";
         }
     }
 
-
     function store() {
-        localStorage.setItem("hisData"+location.pathname, JSON.stringify(data));
+        //localStorage.setItem("hisData"+location.pathname, JSON.stringify(hisTrace));
     }
 
     function restore() {
         try {
-            return JSON.parse(localStorage.getItem("hisData"+location.pathname));
+            return JSON.parse(localStorage.getItem("hisData" + location.pathname));
         } catch (e) {
             return null;
         }
     }
 
-    //restore stack
-    restore();
-    //compare
-
     //resume stack  or start a new one
-
-
-    window.onbeforeunload = function (e) {
+    $(window).on("beforeunload", function (e) {
         //存储当前
-        console.log(e);
         store();
-    }
+    });
 
     //===================For test=========================
     exports.getHisStack = function () {
-        return data.hisStack;
+        return hisTrace.stack;
+    }
+
+    //compare
+    if(!hisTrace.fromBack()){
+        hisTrace = defaultHisTrace;
+        var hash = location.hash.split("-")[0] || "#index";
+        exports.add(hash);
     }
 
 });
