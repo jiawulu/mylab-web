@@ -5,18 +5,19 @@ define(function (require, exports, module) {
             entrance:document.referrer,
             stack:[],
             index:-1,
-            fromBack:function(){
+            fromBack:function () {
                 return this.exit && document.referrer &&
                     this.exit.indexOf(document.referrer) === 0;
             }
-        };
-        hisTrace = restore() || defaultHisTrace;
+        },
+        hisTrace = restore() || defaultHisTrace,
+        storageKey = "hisTrace" + location.pathname;
 
-
-    exports.add = function (hash) {
-        var tmpStack = [];
-        var i = 0;
-        var hisStack = hisTrace.stack;
+    function addHash() {
+        var hash = location.hash.split("-")[0] || "#index",
+            tmpStack = [],
+            i = 0,
+            hisStack = hisTrace.stack;
         while (i < hisStack.length) {
             if (hisStack[i].hash == hash) {
                 break;
@@ -26,10 +27,7 @@ define(function (require, exports, module) {
             i++;
         }
         hisTrace.stack = tmpStack;
-        addHash(hash);
-    }
 
-    function addHash(hash) {
         var hisStack = hisTrace.stack, index = hisTrace.index;
         hisStack.push({hash:hash, hisLen:++index, orignHash:location.hash,
             isFromBack:function () {
@@ -58,18 +56,14 @@ define(function (require, exports, module) {
                 window.location.href = ((prevHash && prevHash.orignHash) ? prevHash.orignHash : "#index");
             }
         } else {
-            window.location.href = hisTrace.entrance || window.defaultBackPage
-                || "http://m.taobao.com";
+            window.location.href = ( hisTrace.entrance || window.defaultBackPage
+                || "http://m.taobao.com");
         }
-    }
-
-    function store() {
-        //localStorage.setItem("hisData"+location.pathname, JSON.stringify(hisTrace));
     }
 
     function restore() {
         try {
-            return JSON.parse(localStorage.getItem("hisData" + location.pathname));
+            return JSON.parse(localStorage.getItem(storageKey));
         } catch (e) {
             return null;
         }
@@ -78,19 +72,30 @@ define(function (require, exports, module) {
     //resume stack  or start a new one
     $(window).on("beforeunload", function (e) {
         //存储当前
-        store();
+        if (hisTrace.exit) {
+            localStorage.setItem(storageKey, JSON.stringify(hisTrace));
+        } else {
+            localStorage.removeItem(storageKey);
+        }
     });
+
+    $(window).on('hashchange', function addHash() {
+        addHash();
+    });
+
+    //compare
+    if (!hisTrace.fromBack()) {
+        hisTrace = defaultHisTrace;
+        addHash();
+    }
+
+    exports.addExit = function (exit) {
+        hisTrace.exit = exit;
+    }
 
     //===================For test=========================
     exports.getHisStack = function () {
         return hisTrace.stack;
-    }
-
-    //compare
-    if(!hisTrace.fromBack()){
-        hisTrace = defaultHisTrace;
-        var hash = location.hash.split("-")[0] || "#index";
-        exports.add(hash);
     }
 
 });
