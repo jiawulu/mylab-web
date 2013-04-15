@@ -13,34 +13,32 @@ define(function (require, exports, module) {
         $ = require('zepto'),
         mustache = require('mustache');
 
-    var tmp = "<ul>{{#.}}<li>{{toString}}</li>{{/.}}</ul>";
-
-
-    function addHash(){
-        var hash = location.hash.split("-")[0] || "#index";
-        history.add(hash);
-        updateStackInfo();
-    }
+    var tmp = "<ul>{{#.}}<li>{{info}}</li>{{/.}}</ul>";
 
 //    addHash();
 
-    window.onhashchange = function(e){
-        addHash();
-    }
+    $(window).on('hashchange', function(e){
+        updateStackInfo();
+    });
 
     document.getElementById("back").onclick = function(){
         history.back();
     }
 
-
     function updateStackInfo(){
         var stacks = history.getHisStack();
+
+        stacks.info = function () {
+            return (this.refer ? this.refer : "") + "|" + (this.hash ? this.hash : "")
+                + "|" + (this.orignHash ? this.orignHash : "") + "|" + (this.hisLen ? this.hisLen : "");
+        }
         var result = mustache.render(tmp,stacks);
+
         //console.log(result);
         $("#hisStack").html(result);
     }
 
-
+    setTimeout(function(){updateStackInfo()},200)
 
 
 });

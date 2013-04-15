@@ -32,9 +32,6 @@ define(function (require, exports, module) {
         hisStack.push({hash:hash, hisLen:++index, orignHash:location.hash,
             isFromBack:function () {
                 return  index - this.hisLen === 1;
-            }, toString:function () {
-                return (this.refer ? this.refer : "") + "|" + (this.hash ? this.hash : "")
-                    + "|" + (this.orignHash ? this.orignHash : "") + "|" + (this.hisLen ? this.hisLen : "");
             }});
     }
 
@@ -70,7 +67,7 @@ define(function (require, exports, module) {
     }
 
     //resume stack  or start a new one
-    $(window).on("beforeunload", function (e) {
+    $(window).on("beforeunload", function () {
         //存储当前
         if (hisTrace.exit) {
             localStorage.setItem(storageKey, JSON.stringify(hisTrace));
@@ -79,7 +76,7 @@ define(function (require, exports, module) {
         }
     });
 
-    $(window).on('hashchange', function addHash() {
+    $(window).on('hashchange', function() {
         addHash();
     });
 
