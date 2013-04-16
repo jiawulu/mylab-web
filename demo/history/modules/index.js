@@ -38,6 +38,13 @@ define(function (require, exports, module) {
         $("#hisStack").html(result);
     }
 
+    $("a").on("click",function(e){
+        var href = $(e.currentTarget).attr("href");
+        if(href.indexOf("#") !== 0){
+            history.addExit(href);
+        }
+    })
+
     setTimeout(function(){updateStackInfo()},200)
 
 

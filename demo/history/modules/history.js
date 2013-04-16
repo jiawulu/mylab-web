@@ -1,18 +1,21 @@
 define(function (require, exports, module) {
 
     var $ = require('zepto'),
+        storageKey = "hisTrace" + location.pathname,
         defaultHisTrace = {
-            entrance:document.referrer,
-            stack:[],
-            index:-1,
-            fromBack:function () {
-                return this.exit && document.referrer &&
-                    this.exit.indexOf(document.referrer) === 0;
-            }
+            entrance: document.referrer,
+            stack: [],
+            index: -1
         },
-        hisTrace = restore() || defaultHisTrace,
-        storageKey = "hisTrace" + location.pathname;
+        hisTrace = restore() || defaultHisTrace;
 
+    hisTrace.outerBack = function(){
+        return this.exit && document.referrer &&
+            document.referrer.indexOf(this.exit.split("#")[0]) >= 0;
+    };
+    hisTrace.innerBack =  function (hisItem) {
+        return  this.index - hisItem.hisLen === 1;
+    };
     function addHash() {
         var hash = location.hash.split("-")[0] || "#index",
             tmpStack = [],
@@ -28,11 +31,9 @@ define(function (require, exports, module) {
         }
         hisTrace.stack = tmpStack;
 
-        var hisStack = hisTrace.stack, index = hisTrace.index;
-        hisStack.push({hash:hash, hisLen:++index, orignHash:location.hash,
-            isFromBack:function () {
-                return  index - this.hisLen === 1;
-            }});
+        var hisStack = hisTrace.stack;
+        hisStack.push({hash: hash, hisLen: ++hisTrace.index,
+            orignHash: location.hash});
     }
 
     exports.back = function () {
@@ -46,8 +47,8 @@ define(function (require, exports, module) {
         }
 
         if (prevHash) {
-            if (prevHash.isFromBack()) {
-                hisTrace.times = hisTrace.times - 2;
+            if ( hisTrace.innerBack(prevHash)) {
+                hisTrace.index = hisTrace.index - 2;
                 history.back();
             } else {
                 window.location.href = ((prevHash && prevHash.orignHash) ? prevHash.orignHash : "#index");
@@ -69,6 +70,7 @@ define(function (require, exports, module) {
     //resume stack  or start a new one
     $(window).on("beforeunload", function () {
         //存储当前
+        console.log(hisTrace);
         if (hisTrace.exit) {
             localStorage.setItem(storageKey, JSON.stringify(hisTrace));
         } else {
@@ -76,14 +78,21 @@ define(function (require, exports, module) {
         }
     });
 
-    $(window).on('hashchange', function() {
+    $(window).on('hashchange', function () {
         addHash();
     });
 
+    console.log(hisTrace);
     //compare
-    if (!hisTrace.fromBack()) {
+    if (!hisTrace.outerBack()) {
         hisTrace = defaultHisTrace;
         addHash();
+    }else{
+        //TODO 添加最后一个hash
+        if(hisTrace.stack.length){
+            var originHash = hisTrace.stack[hisTrace.stack.length-1].orignHash;
+            originHash && (window.location.href = originHash) ;
+        }
     }
 
     exports.addExit = function (exit) {
