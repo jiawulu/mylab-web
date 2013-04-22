@@ -8,44 +8,55 @@ seajs.config({
 
 define(function (require, exports, module) {
 
-    var history = require('./history.js'),
-         _ = require('underscore'),
+    var History = require('../../../base/modules/history/history.js'),
+        _ = require('underscore'),
         $ = require('zepto'),
         mustache = require('mustache');
 
     var tmp = "<ul>{{#.}}<li>{{info}}</li>{{/.}}</ul>";
 
 //    addHash();
+    History.prototype.extend({
+        defaultPage: "http://m.taobao.com",
+        filterEntrance: function () {
+            return !document.referrer.indexOf("page3") >= 0;
+        },
+        fromBack: function(){
 
-    $(window).on('hashchange', function(e){
+        }
+    });
+    var history = new History;
+
+    $(window).on('hashchange', function (e) {
         updateStackInfo();
     });
 
-    document.getElementById("back").onclick = function(){
+    document.getElementById("back").onclick = function () {
         history.back();
     }
 
-    function updateStackInfo(){
+    function updateStackInfo() {
         var stacks = history.getHisStack();
-
         stacks.info = function () {
             return (this.refer ? this.refer : "") + "|" + (this.hash ? this.hash : "")
                 + "|" + (this.orignHash ? this.orignHash : "") + "|" + (this.hisLen ? this.hisLen : "");
         }
-        var result = mustache.render(tmp,stacks);
-
+        var result = mustache.render(tmp, stacks);
         //console.log(result);
         $("#hisStack").html(result);
     }
 
-    $("a").on("click",function(e){
-        var href = $(e.currentTarget).attr("href");
-        if(href.indexOf("#") !== 0){
+    $("a").on("click", function (e) {
+        var $el = $(e.currentTarget);
+        var href = $el.attr("href");
+        if (href.indexOf("#") !== 0 && !$el.hasClass("nolog")) {
             history.addExit(href);
         }
     })
 
-    setTimeout(function(){updateStackInfo()},200)
+    setTimeout(function () {
+        updateStackInfo()
+    }, 200);
 
 
 });
